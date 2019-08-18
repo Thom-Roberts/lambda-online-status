@@ -89,7 +89,7 @@ function SendDbUpdateRequest(item: MemberStatus): Promise<void> {
          UpdateExpression: "set onlineStatus = :s, dateLastOn = :d",
          ExpressionAttributeValues: {
             ":s": item.onlineStatus,
-            ":d": item.dateLastOn,
+            ":d": item.dateLastOn.toString(),
          }
 		};
 
