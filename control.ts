@@ -48,7 +48,8 @@ function GetOnlineStatuses(): Promise<MemberStatus[]> {
             let members: MemberStatus[] = [];
             result['Response']['results'].forEach((member: any) => {
                if(Object.prototype.hasOwnProperty.call(member, 'destinyUserInfo')) {
-                  let dateLastOn = new Date(Date.now() - parseInt(member['lastOnlineStatusChange']));
+                  // Number returned is the number of seconds since 1970 (unix timestamp)
+                  let dateLastOn = new Date(parseInt(member['lastOnlineStatusChange']) * 1000);
 
                   members.push({
                      'membershipId': member['destinyUserInfo']['membershipId'],
