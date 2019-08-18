@@ -14,6 +14,7 @@ const TABLENAME = 'Member';
 interface MemberStatus {
    membershipId: string;
    onlineStatus: boolean;
+   dateLastOn: Date;
 }
 
 export async function main(): Promise<any> {
@@ -47,9 +48,12 @@ function GetOnlineStatuses(): Promise<MemberStatus[]> {
             let members: MemberStatus[] = [];
             result['Response']['results'].forEach((member: any) => {
                if(Object.prototype.hasOwnProperty.call(member, 'destinyUserInfo')) {
+                  let dateLastOn = new Date(Date.now() - parseInt(member['lastOnlineStatusChange']));
+
                   members.push({
                      'membershipId': member['destinyUserInfo']['membershipId'],
                      'onlineStatus': member['isOnline'],
+                     'dateLastOn': dateLastOn,
                   });
                }
             });
@@ -74,7 +78,7 @@ function UpdateStatusesInDb(memberStatuses: MemberStatus[]) : Promise<void> {
    });
 }
 
-// See format for batch update request here: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#batchWriteItem-property
+// See format for update request here: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GettingStarted.NodeJs.03.html#GettingStarted.NodeJs.03.03
 function SendDbUpdateRequest(item: MemberStatus): Promise<void> {
 	return new Promise((resolve, reject) => {
 		const params: any = {
@@ -82,9 +86,10 @@ function SendDbUpdateRequest(item: MemberStatus): Promise<void> {
          Key: {
             "membershipId": item.membershipId
          },
-         UpdateExpression: "set onlineStatus = :s",
+         UpdateExpression: "set onlineStatus = :s, dateLastOn = :d",
          ExpressionAttributeValues: {
-            ":s": item.onlineStatus
+            ":s": item.onlineStatus,
+            ":d": item.dateLastOn,
          }
 		};
 
